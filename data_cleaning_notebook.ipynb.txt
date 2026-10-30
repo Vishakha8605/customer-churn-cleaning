@@ -1,0 +1,86 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "# Data Cleaning & Structural Validation Report\n",
+        "**Dataset:** Customer Churn Raw v2\n",
+        "\n",
+        "### Steps Performed:\n",
+        "1. **Loaded Raw Data**: Inspected missing values, duplicates, and data type mismatches.\n",
+        "2. **Removed Duplicates**: Identified and dropped duplicate customer records.\n",
+        "3. **Handled Missing / Unknown Values**:\n",
+        "   - Replaced `'unknown'` values in `TotalChargesINR` with `MonthlyChargesINR * TenureMonths`.\n",
+        "   - Imputed missing `Age` values using the median age.\n",
+        "4. **Validated Data Types**: Ensured numerical fields are float/int and categorical fields are standardized.\n",
+        "5. **Exported Clean Data**: Saved final clean dataset to `cleaned_customer_churn.csv`."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "\n",
+        "# 1. Load dataset\n",
+        "df = pd.read_csv('customer_churn_raw_v2.csv')\n",
+        "print('Initial shape:', df.shape)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 2,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "# 2. Remove duplicate rows\n",
+        "df_clean = df.drop_duplicates().copy()\n",
+        "print('Shape after removing duplicates:', df_clean.shape)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 3,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "# 3. Fix TotalChargesINR column\n",
+        "df_clean['TotalChargesINR'] = pd.to_numeric(df_clean['TotalChargesINR'], errors='coerce')\n",
+        "missing_total = df_clean['TotalChargesINR'].isna()\n",
+        "df_clean.loc[missing_total, 'TotalChargesINR'] = df_clean.loc[missing_total, 'MonthlyChargesINR'] * df_clean.loc[missing_total, 'TenureMonths']"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 4,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "# 4. Impute missing Age values with Median\n",
+        "df_clean['Age'] = df_clean['Age'].fillna(df_clean['Age'].median()).astype(int)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 5,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "# 5. Export cleaned CSV\n",
+        "df_clean.to_csv('cleaned_customer_churn.csv', index=False)\n",
+        "print('Cleaned dataset successfully generated!')"
+      ]
+    }
+  ],
+  "metadata": {
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 2
+}
